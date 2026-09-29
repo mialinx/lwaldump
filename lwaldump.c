@@ -1,37 +1,10 @@
-/*-------------------------------------------------------------------------
- *
- * hello_ext.c
- *     example extenstion for PostgreSQL
- *
- * Copyright (c) 2014-2015, PostgreSQL Global Development Group
- *
- * IDENTIFICATION
- *      hello_ext/hello_ext.c
- *
- *-------------------------------------------------------------------------
- */
-
-#define FRONTEND 1
-
 #include "postgres.h"
-#include "fmgr.h"
-#include "utils/builtins.h"
 #include "utils/pg_lsn.h"
-#include "postgres.h"
 
-#include <dirent.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
+#include "access/xlogutils.h"
 #include "access/xlogreader.h"
 #include "access/xlogrecord.h"
-#include "access/xlog_internal.h"
 #include "access/xlog.h"
-#include "access/transam.h"
-#include "common/fe_memutils.h"
-#include "common/logging.h"
-#include "getopt_long.h"
-#include "miscadmin.h"
 
 PG_MODULE_MAGIC;
 
@@ -68,8 +41,6 @@ lwaldump(PG_FUNCTION_ARGS)
         {
             break;
         }
-        /* after reading the first record, continue at next one */
-        first_record = InvalidXLogRecPtr;
         last_lsn = xlogreader->EndRecPtr;
     }
 
@@ -80,7 +51,7 @@ lwaldump(PG_FUNCTION_ARGS)
      */
     ThisTimeLineID = save_currtli;
 
-    XLogReaderFree(xlogreader_state);
+    XLogReaderFree(xlogreader);
 
     PG_RETURN_LSN(last_lsn);
 }
